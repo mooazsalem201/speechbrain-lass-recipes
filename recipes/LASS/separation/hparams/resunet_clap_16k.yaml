@@ -1,0 +1,81 @@
+# ############################################################################
+# Text-queried sound separation (LASS), AudioSep style at DCASE-baseline scale
+# Model: frozen CLAP text encoder -> FiLM-conditioned ResUNet30 -> T-F mask
+# Data: Clotho v2 + FSD50K (GPT-4 auto-captions), mixed on the fly per batch
+# Eval: DCASE 2024 Task 9 synthetic validation set (baseline: SDR 5.708)
+# ############################################################################
+
+seed: 1234
+__set_seed: !apply:speechbrain.utils.seed_everything [!ref <seed>]
+
+# Folder containing clotho/, fsd50k/ and fsd50k_dev_auto_caption.json
+data_folder: !PLACEHOLDER
+output_folder: !ref results/resunet_clap_16k/<seed>
+save_folder: !ref <output_folder>/save
+train_log: !ref <output_folder>/train_log.txt
+
+# Data preparation (prepare_data.py); skip_prep: True reuses the manifests
+clotho_folder: !ref <data_folder>/clotho
+fsd50k_folder: !ref <data_folder>/fsd50k
+fsd50k_caption_json: !ref <data_folder>/fsd50k_dev_auto_caption.json
+skip_prep: False
+train_csv: !ref <save_folder>/train.csv
+valid_csv: !ref <save_folder>/valid.csv
+
+# Optional final scoring on the DCASE 2024 Task 9 validation set
+dcase_eval_csv: null  # path to lass_synthetic_validation.csv
+dcase_audio_dir: null  # path to the lass_validation/ wavs
+
+# Audio
+sample_rate: 16000
+segment_seconds: 5.0
+n_fft: 1024
+hop_length: 160
+
+# Mixing (AudioSep defaults): the interference is energy-matched to the
+# target, then shifted by a random gain in [-snr_jitter_db, +snr_jitter_db]
+snr_jitter_db: 10
+
+# Training
+number_of_epochs: 100
+batch_size: 16
+lr: 0.001
+warmup_steps: 10000  # lr x0.001 -> x0.01 -> x0.1 -> x1, every warmup_steps
+num_workers: 4
+
+train_dataloader_opts:
+    batch_size: !ref <batch_size>
+    shuffle: True
+    drop_last: True
+    num_workers: !ref <num_workers>
+
+valid_dataloader_opts:
+    batch_size: !ref <batch_size>
+    num_workers: !ref <num_workers>
+
+# Frozen query encoder (not in `modules`: never trained, never checkpointed)
+query_encoder: !new:clap_text.ClapTextEncoder
+    source: laion/larger_clap_general
+
+model: !new:models.LASSMasker
+    n_fft: !ref <n_fft>
+    hop_length: !ref <hop_length>
+    cond_dim: 512
+
+modules:
+    model: !ref <model>
+
+opt_class: !name:torch.optim.AdamW
+    lr: !ref <lr>
+
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+    limit: !ref <number_of_epochs>
+
+checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
+    checkpoints_dir: !ref <save_folder>
+    recoverables:
+        model: !ref <model>
+        counter: !ref <epoch_counter>
+
+train_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
+    save_file: !ref <train_log>

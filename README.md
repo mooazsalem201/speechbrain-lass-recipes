@@ -2,7 +2,7 @@
 
 Text-queried (language-queried, **LASS**) sound separation recipes in [SpeechBrain](https://github.com/speechbrain/speechbrain) format. Type *"a dog barking"* — get the dog isolated from the mixture.
 
-**Status: under construction.**
+**Status: code complete (model, training, DCASE evaluation, tests); flagship training run pending.**
 
 ## Planned first recipe (`recipes/LASS/separation/`)
 
