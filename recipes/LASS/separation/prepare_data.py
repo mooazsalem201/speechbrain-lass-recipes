@@ -11,7 +11,7 @@ Download the audio yourself (see README): Clotho v2 from Zenodo record
 from Zenodo record 10887496.
 
 Authors
- * <your name> 2026
+ * Mooaz Salem 2026
 """
 
 import csv

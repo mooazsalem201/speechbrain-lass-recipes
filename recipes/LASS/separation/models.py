@@ -11,7 +11,7 @@ a tanh (cos, sin) pair that rotates the mixture phase.
 Spectrograms are laid out as ``(batch, channel, time, freq)``.
 
 Authors
- * <your name> 2026
+ * Mooaz Salem 2026
 """
 
 import torch

@@ -9,7 +9,7 @@ To run:
     python train.py hparams/resunet_clap_16k.yaml --data_folder /path/to/data
 
 Authors
- * <your name> 2026
+ * Mooaz Salem 2026
 """
 
 import sys

@@ -8,7 +8,7 @@ are L2-normalized (the HF head returns unnormalized projections, unlike
 through the encoder and repeated captions cost nothing.
 
 Authors
- * <your name> 2026
+ * Mooaz Salem 2026
 """
 
 import torch

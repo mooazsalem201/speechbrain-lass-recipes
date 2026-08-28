@@ -9,7 +9,7 @@ SDR 5.708 / SDRi 5.673 / SI-SDR 3.862 on the synthetic validation set.
 Do not "improve" the metric functions: any change breaks comparability.
 
 Authors
- * <your name> 2026
+ * Mooaz Salem 2026
 """
 
 import csv
