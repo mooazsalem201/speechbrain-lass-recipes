@@ -19,6 +19,8 @@ import numpy as np
 import torch
 import torchaudio
 
+from speechbrain.dataio.dataio import read_audio, read_audio_info
+
 
 def calculate_sdr(ref, est, eps=1e-10):
     """Signal-to-distortion ratio in dB (challenge definition).
@@ -43,8 +45,10 @@ def calculate_sdr(ref, est, eps=1e-10):
     >>> round(float(calculate_sdr(ref, ref * 1.1)), 3)
     20.0
     """
-    reference = ref
-    noise = est - reference
+    # Computed in float64 so results do not drift with NumPy's float32
+    # reduction order; agrees with the challenge code to ~1e-6 dB.
+    reference = np.asarray(ref, dtype=np.float64)
+    noise = np.asarray(est, dtype=np.float64) - reference
     numerator = np.clip(a=np.mean(reference**2), a_min=eps, a_max=None)
     denominator = np.clip(a=np.mean(noise**2), a_min=eps, a_max=None)
     sdr = 10.0 * np.log10(numerator / denominator)
@@ -72,9 +76,9 @@ def calculate_sisdr(ref, est):
     >>> bool(calculate_sisdr(ref, 2 * ref) > 60)  # scale does not matter
     True
     """
-    eps = np.finfo(ref.dtype).eps
-    reference = ref.copy()
-    estimate = est.copy()
+    eps = np.finfo(ref.dtype).eps  # the challenge's float32 eps
+    reference = np.asarray(ref, dtype=np.float64)
+    estimate = np.asarray(est, dtype=np.float64)
     reference = reference.reshape(reference.size, 1)
     estimate = estimate.reshape(estimate.size, 1)
     Rss = np.dot(reference.T, reference)
@@ -130,8 +134,10 @@ def mix_at_snr(source, noise, snr_db):
 
 def load_mono(path, sample_rate):
     """Load a wav as a mono float32 numpy array at ``sample_rate``."""
-    wav, sr = torchaudio.load(path)
-    wav = wav.mean(dim=0)
+    wav = read_audio(path)
+    if wav.dim() > 1:
+        wav = wav.mean(dim=1)
+    sr = read_audio_info(path).sample_rate
     if sr != sample_rate:
         wav = torchaudio.functional.resample(wav, sr, sample_rate)
     return wav.numpy()

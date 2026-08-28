@@ -18,7 +18,7 @@ import csv
 import json
 import os
 
-import torchaudio
+from speechbrain.dataio.dataio import read_audio_info
 
 CLOTHO_CAPTION_COLUMNS = [f"caption_{i}" for i in range(1, 6)]
 
@@ -79,7 +79,7 @@ def _fsd50k_rows(folder, caption_json):
 def _row(row_id, wav, caption):
     if not os.path.isfile(wav):
         raise FileNotFoundError(f"missing audio file: {wav}")
-    info = torchaudio.info(wav)
+    info = read_audio_info(wav)
     duration = info.num_frames / info.sample_rate
     return {
         "ID": row_id,

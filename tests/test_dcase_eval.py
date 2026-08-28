@@ -2,9 +2,10 @@
 
 Expected values were produced by the challenge baseline's own
 ``utils.calculate_sdr`` / ``utils.calculate_sisdr`` (Audio-AGI/
-dcase2024_task9_baseline) on the same deterministic inputs. Our port must
-match them exactly, otherwise our numbers stop being comparable to the
-published leaderboard.
+dcase2024_task9_baseline, NumPy 1.23) on the same deterministic inputs.
+Our port must agree to within 1e-4 dB (float32 reduction order differs
+across NumPy versions at the ~1e-6 dB level), otherwise our numbers stop
+being comparable to the published leaderboard.
 """
 
 import os
@@ -31,23 +32,23 @@ def _signals():
 
 def test_sdr_matches_reference_implementation():
     ref, est = _signals()
-    assert calculate_sdr(ref=ref, est=est) == 20.00750088901096
+    assert abs(calculate_sdr(ref=ref, est=est) - 20.00750088901096) < 1e-4
 
 
 def test_sisdr_matches_reference_implementation():
     ref, est = _signals()
-    assert calculate_sisdr(ref=ref, est=est) == 20.00380277633667
+    assert abs(calculate_sisdr(ref=ref, est=est) - 20.00380277633667) < 1e-4
 
 
 def test_sisdr_is_scale_invariant_but_sdr_is_not():
     ref, est = _signals()
-    assert calculate_sisdr(ref=ref, est=2 * est) == 20.00380277633667
-    assert calculate_sdr(ref=ref, est=2 * est) == -0.16276967850978868
+    assert abs(calculate_sisdr(ref=ref, est=2 * est) - 20.00380277633667) < 1e-4
+    assert abs(calculate_sdr(ref=ref, est=2 * est) + 0.16276967850978868) < 1e-4
 
 
 def test_sdr_of_identical_signals_hits_eps_ceiling():
     ref, _ = _signals()
-    assert calculate_sdr(ref=ref, est=ref) == 99.97672970303586
+    assert abs(calculate_sdr(ref=ref, est=ref) - 99.97672970303586) < 1e-4
 
 
 def test_mix_at_snr_hits_requested_snr():

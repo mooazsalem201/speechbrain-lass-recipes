@@ -5,8 +5,8 @@ import json
 import os
 import sys
 
-import torch
-import torchaudio
+import numpy as np
+import soundfile as sf
 
 sys.path.insert(
     0,
@@ -19,7 +19,7 @@ from prepare_data import prepare_lass  # noqa: E402
 
 
 def _wav(path, seconds, sr=16000):
-    torchaudio.save(str(path), torch.zeros(1, int(seconds * sr)), sr)
+    sf.write(str(path), np.zeros(int(seconds * sr), dtype=np.float32), sr)
 
 
 def _fake_clotho(root, split, files):
