@@ -1,0 +1,21 @@
+# Mirrors speechbrain/speechbrain's ruff configuration so recipe code passes
+# their pre-commit unchanged when upstreamed.
+[tool.ruff]
+target-version = "py38"
+line-length = 80
+exclude = [".git", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["B007", "B904"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-wrap-aliases = true
+known-first-party = ["speechbrain"]
+known-third-party = ["torch", "torchaudio", "numpy", "scipy", "hyperpyyaml", "joblib", "packaging", "requests", "sentencepiece", "tqdm", "huggingface_hub"]
+split-on-trailing-comma = false
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
